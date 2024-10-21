@@ -1,0 +1,243 @@
+Description of the project - This project is an Office Supplies Inventory Management System that I built using OOP principles in Python that we learned. The system is designed to help users efficiently manage office supplies such as pens, notebooks, staplers, and other office related items. The system allows users to perform essential inventory operations like adding, removing, updating, and viewing items in the inventory.
+
+Key functionalities include tracking item attributes such as item ID, name, category, quantity, price per unit, and supplier information. The system supports generating inventory reports, including low stock alerts, and provides the ability to apply discounts to items. Multi-user support is implemented, allowing different roles such as admin and manager to access the system, with their own permissions for performing operations.
+
+Type Specificity Consideration: The system is designed specifically for office supplies, meaning that attributes and functionalities which are customized to this type of inventory. For example, categories like "writing instruments" and "paper products" are relevant for managing supplies in an office setting. Similarly, reports and operations like supplier tracking and bulk stock updates are customized to the needs of office supply management, making the system more practical and user-friendly for this type of inventory.
+
+Structure of code with block diagram:
+
+class Item:
+    def __init__(self, item_id, name, category, quantity, price_per_unit, supplier):
+        self.item_id = item_id
+        self.name = name
+        self.category = category
+        self.quantity = quantity
+        self.price_per_unit = price_per_unit
+        self.supplier = supplier
+    
+    def update_quantity(self, new_quantity):
+        self.quantity = new_quantity
+    
+    def apply_discount(self, percentage):
+        self.price_per_unit -= (self.price_per_unit * (percentage / 100))
+    
+    def get_details(self):
+        return {
+            'ID': self.item_id,
+            'Name': self.name,
+            'Category': self.category,
+            'Quantity': self.quantity,
+            'Price per Unit': self.price_per_unit,
+            'Supplier': self.supplier
+        }
+    
+    def __str__(self):
+        return f"{self.name} (ID: {self.item_id}, Category: {self.category}, Quantity: {self.quantity})"
+
+class Inventory:
+    def __init__(self):
+        self.items = {} 
+    
+    def add_item(self, item):
+        if item.item_id in self.items:
+            print(f"Item with ID {item.item_id} already exists.")
+        else:
+            self.items[item.item_id] = item
+            print(f"Item {item.name} added to the inventory.")
+    
+    def remove_item(self, item_id):
+        if item_id in self.items:
+            del self.items[item_id]
+            print(f"Item with ID {item_id} removed from inventory.")
+        else:
+            print(f"Item with ID {item_id} does not exist.")
+    
+    def update_inventory(self, item_id, new_quantity):
+        if item_id in self.items:
+            self.items[item_id].update_quantity(new_quantity)
+            print(f"Updated {self.items[item_id].name} to quantity {new_quantity}.")
+        else:
+            print(f"Item with ID {item_id} not found.")
+    
+    def get_item(self, item_id):
+        if item_id in self.items:
+            return self.items[item_id].get_details()
+        else:
+            print(f"Item with ID {item_id} not found.")
+    
+    def list_items(self):
+        if self.items:
+            for item in self.items.values():
+                print(item)
+        else:
+            print("Inventory is empty.")
+    
+    def check_stock(self, item_id):
+        if item_id in self.items:
+            return self.items[item_id].quantity
+        else:
+            print(f"Item with ID {item_id} not found.")
+
+class Report:
+    def __init__(self, inventory):
+        self.inventory = inventory
+    
+    def low_stock_report(self, threshold=10):
+        print(f"Low Stock Report (Items with quantity below {threshold}):")
+        for item in self.inventory.items.values():
+            if item.quantity < threshold:
+                print(f"Item: {item.name}, Quantity: {item.quantity}")
+    
+    def generate_report(self):
+        print("Inventory Report:")
+        self.inventory.list_items()
+
+class User:
+    def __init__(self, username, role):
+        self.username = username
+        self.role = role
+    
+    def get_permissions(self):
+        if self.role == 'admin':
+            return ['add_item', 'remove_item', 'update_inventory', 'generate_report']
+        elif self.role == 'manager':
+            return ['check_stock', 'generate_report']
+        else:
+            return []
+    
+    def perform_inventory_actions(self, action, inventory, *args):
+        permissions = self.get_permissions()
+        if action in permissions:
+            if action == 'add_item':
+                inventory.add_item(*args)
+            elif action == 'remove_item':
+                inventory.remove_item(*args)
+            elif action == 'update_inventory':
+                inventory.update_inventory(*args)
+            elif action == 'check_stock':
+                print(f"Stock level: {inventory.check_stock(*args)}")
+            elif action == 'generate_report':
+                Report(inventory).generate_report()
+        else:
+            print(f"Permission denied: {self.username} does not have access to {action}.")
+
+            
++----------------------------+
+|         User                |
+|----------------------------|
+| - username                  |
+| - role                      |
+|----------------------------|
+| + get_permissions()         |
+| + perform_inventory_actions()|
++------------+----------------+
+             |
+             v
++-----------------------------+    
+|         Inventory            |    
+|-----------------------------|
+| - items: dict                |    
+|-----------------------------|
+| + add_item()                 |
+| + remove_item()              |
+| + update_inventory()         |
+| + get_item()                 |
+| + list_items()               |
+| + check_stock()              |
++-----------------------------+
+             ^
+             |
++------------+----------------+    
+|         Report               |    
+|-----------------------------|
+| - inventory: ref             |
+|-----------------------------|
+| + low_stock_report()         |
+| + generate_report()          |
++-----------------------------+
+             ^
+             |
++------------+----------------+    
+|         Item                 |    
+|-----------------------------|
+| - item_id                    |
+| - name                       |
+| - category                   |
+| - quantity                   |
+| - price_per_unit             |
+| - supplier                   |
+|-----------------------------|
+| + update_quantity()          |
+| + apply_discount()           |
+| + get_details()              |
++-----------------------------+
+
+Brief summary - 
+Item class represents office supply items in the inventory
+Inventory class is the collection of the item objects which allow the adding, removing, updating and listing of the items.
+Report class generates reports such as low stock alert and overall report on the stock
+User class sets the permissions for both admins and managers 
+
+Instructions for full functionality - 
+
+To start using the system, we first create item objects to represent the office supplies to manage.
+
+pen = Item(item_id=1, name='Pen', category='Writing', quantity=50, price_per_unit=1.0, supplier='OfficeSupplyCo1')
+notebook = Item(item_id=2, name='Notebook', category='Paper', quantity=100, price_per_unit=3.0, supplier='OfficeSupplyCo2')
+stapler = Item(item_id=3, name='Stapler', category='Office Tools', quantity=30, price_per_unit=5.0, supplier='OfficeSupplyCo3')
+
+Next, we create an inventory object to store and manage the office supplies.
+
+inventory = Inventory()
+
+We can add items to the inventory using the add_item method. Admin users can only perform this action.
+
+admin_user = User(username='admin_user', role='admin')
+admin_user.perform_inventory_actions('add_item', inventory, pen)
+admin_user.perform_inventory_actions('add_item', inventory, notebook)
+admin_user.perform_inventory_actions('add_item', inventory, stapler)
+
+To view all items in the inventory, we use the list_items method. Both admin and manager users can perform this action.
+
+admin_user.perform_inventory_actions('generate_report', inventory)
+
+We can update the quantity of an item in the inventory when stock levels change. Only admin users can perform this action.
+
+admin_user.perform_inventory_actions('update_inventory', inventory, 1, 70)
+
+To check the stock level of a specific item, we use the check_stock method. Both admin and manager users can perform this action.
+
+manager_user = User(username='manager_user', role='manager')
+manager_user.perform_inventory_actions('check_stock', inventory, 2) 
+
+To remove an item from the inventory, we use the remove_item method. Only admin users can perform this action.
+
+admin_user.perform_inventory_actions('remove_item', inventory, 3) 
+
+We can then generate two reports. one for low stock and the other for overall stock levels.
+
+report = Report(inventory)
+report.low_stock_report(threshold=10)
+
+report.generate_report()
+
+We can set the permissions for both admins and managers.
+
+admin_user = User(username='admin_user', role='admin')
+admin_user.perform_inventory_actions('add_item', inventory, pen)
+admin_user.perform_inventory_actions('remove_item', inventory, 1)
+admin_user.perform_inventory_actions('generate_report', inventory)
+
+manager_user = User(username='manager_user', role='manager')
+manager_user.perform_inventory_actions('check_stock', inventory, 1)
+manager_user.perform_inventory_actions('generate_report', inventory)
+
+If we need to apply discounts to an item, we use the apply_discount method in the item class. This method is accessed through the inventory after adding items.
+
+pen.apply_discount(10)
+print(pen.get_details())
+
+I have a screenshot link to show the code being executed here: https://ibb.co/59cWwgK
+
+Findings, challenges, and areas of improvement -  I gained a deeper understanding of applying OOP principles to real world problems such as this project with office supply inventory. Structuring the code into different classes such as Item, Inventory, User, and Report made it clear and concise for a user to understand. Moreover, implementing reports for low stock alerts and full inventory overviews were realistic examples into how inventory management systems operate in a real world setting. The ability to generate reports based on stock levels demonstrated the importance of having a clear view of inventory data for business operations.
+A challenge I faced was managing the permissions in the user class. I had to make sure that each role had the correct permissions to access or restrict certain operations required careful design to avoid errors. An area of improvement would be the user interface. I think in a real world setting, a graphical user interface would be better to use. 
